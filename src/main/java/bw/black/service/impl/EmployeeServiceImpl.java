@@ -2,6 +2,7 @@ package bw.black.service.impl;
 
 import bw.black.dto.request.LoginRequest;
 import bw.black.dto.request.ReqEmployee;
+import bw.black.dto.response.GetEmployeeInfoResponse;
 import bw.black.entity.Employee;
 import bw.black.enums.EnumAvailableStatus;
 import bw.black.exception.ContactsException;
@@ -13,6 +14,7 @@ import bw.black.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -50,5 +52,16 @@ public class EmployeeServiceImpl implements EmployeeService {
         authenticationManager.
                 authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         return jwtGenerator.generateTokenEmployee(employee);
+    }
+    @Override
+    public GetEmployeeInfoResponse getLoggedInEmployeeInfo() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Employee employee = employeeRepository.findByEmailAndActive(email, EnumAvailableStatus.ACTIVE.getValue());
+
+        if (employee == null) {
+            throw new ContactsException("Employee not found", ExceptionConstant.EMPLOYEE_NOT_FOUND);
+        }
+
+        return new GetEmployeeInfoResponse(employee.getName(), employee.getSurname());
     }
 }

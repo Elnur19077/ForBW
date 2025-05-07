@@ -2,13 +2,11 @@ package bw.black.controller;
 
 import bw.black.dto.request.LoginRequest;
 import bw.black.dto.request.ReqEmployee;
+import bw.black.dto.response.GetEmployeeInfoResponse;
 import bw.black.entity.Employee;
 import bw.black.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,4 +23,15 @@ public class EmployeeController {
         public String login(@RequestBody LoginRequest request) {
             return employeeService.login(request);
         }
+    @GetMapping("/me")
+    public GetEmployeeInfoResponse getEmployeeInfo() {
+        return employeeService.getLoggedInEmployeeInfo();
+    }
+
+    @PostMapping("/logout")
+    public String logout() {
+
+        return "Logout successful";
+    }
+
     }

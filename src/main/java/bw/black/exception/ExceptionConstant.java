@@ -12,4 +12,5 @@ public final class ExceptionConstant {
 
     public static final Integer USERNAME_OR_PASSWORD_ARE_INCORRECT = 103;
 
+    public static final Integer EMPLOYEE_NOT_FOUND =104 ;
 }
