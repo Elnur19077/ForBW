@@ -89,7 +89,19 @@ public class ImageServiceImpl implements ImageService {
         }
         return response;
     }
+    @Override
+    public List<ResponseEntity<byte[]>> getImages() {
+        List<ResponseEntity<byte[]>> response = new ArrayList<>();
+        List<ProductImage> productImages = productImageRepository.findAllByActive(EnumAvailableStatus.ACTIVE.getValue());
 
+        for (ProductImage productImage : productImages) {
+            ResponseEntity<byte[]> responseEntity = ResponseEntity.ok()
+                    .contentType(MediaType.valueOf(productImage.getFileType()))
+                    .body(productImage.getData());
+            response.add(responseEntity);
+        }
+        return response;
+    }
     @Override
     public ResponseEntity<byte[]> getImage(Long imageId) {
         ProductImage productImage = productImageRepository.findProductImageByIdAndActive(imageId,EnumAvailableStatus.ACTIVE.getValue());

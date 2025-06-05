@@ -48,8 +48,14 @@ public class ImageController {
     public List<ResponseEntity<byte[]>> getImages(@PathVariable Long contactsId){
         return imageService.getImages(contactsId);
     }
-
+    @GetMapping("/list")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN') or hasAuthority('ADMIN') or hasAuthority('OPERATOR')")
     @ResponseStatus(HttpStatus.OK)
+    public List<ResponseEntity<byte[]>> getAllImages() {
+        return imageService.getImages(); // burada artıq contactsId göndərilmir
+    }
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('SUPER_ADMIN') or hasAuthority('ADMIN')or hasAuthority('OPERATOR')")
     @GetMapping("/{imageId}")
     public ResponseEntity<byte[]> getImage(@PathVariable  Long imageId){
         return imageService.getImage(imageId);

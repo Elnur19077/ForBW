@@ -32,4 +32,23 @@ public class EmailService {
             e.printStackTrace();
         }
     }
+    public void sendPoPdfByEmail(String toEmail, String companyName, String uploadedBy, String fileName, byte[] pdfBytes) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Yeni PO sənədi - " + companyName);
+            helper.setText("Salam,\n\nYeni PO sənədi yerləşdirildi.\n" +
+                    "Şirkət: " + companyName + "\n" +
+                    "Yerləşdirən: " + uploadedBy + "\n" +
+                    "Zəhmət olmasa əlavə olunmuş sənədi yoxlayın.", false);
+
+            helper.addAttachment(fileName, new ByteArrayResource(pdfBytes));
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

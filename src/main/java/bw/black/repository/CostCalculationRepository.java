@@ -1,0 +1,10 @@
+package bw.black.repository;
+
+import bw.black.entity.CostCalculation;
+import bw.black.entity.Notes;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CostCalculationRepository extends JpaRepository<CostCalculation, Long> {
+}

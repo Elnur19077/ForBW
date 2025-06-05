@@ -15,6 +15,8 @@ public interface ImageService {
 
     List<ResponseEntity<byte[]>> getImages(Long contactsId);
 
+    List<ResponseEntity<byte[]>> getImages();
+
     ResponseEntity<byte[]> getImage(Long imageId);
 }
 

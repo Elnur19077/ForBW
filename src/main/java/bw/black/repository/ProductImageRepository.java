@@ -15,4 +15,6 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
     @Modifying
     @Query("UPDATE ProductImage pi SET pi.active = 0 WHERE pi.contacts.id = :contactsId")
     void deactivateProductImagesByContactsId(@Param("contactsId") Long contactsId);
+
+    List<ProductImage> findAllByActive(Integer value);
 }
