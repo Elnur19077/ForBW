@@ -6,7 +6,6 @@ import lombok.*;
 import oracle.sql.TIMESTAMP;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -26,9 +25,10 @@ public class HRR {
     private String personId;
     private String Name;
     private String Department;
-    @JsonFormat(pattern = "dd-MMM-yy hh.mm.ss.SSSSSSSSS a", locale = "en")
-    private LocalDateTime time;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "dd-MMM-yy hh.mm.ss.SSSSSSSSS a", locale = "en")
+    private Date time;
     private String attendanceStatus;
     private String attendanceCheckPoint;
     private String customName;
