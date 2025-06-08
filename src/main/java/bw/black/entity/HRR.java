@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,7 +35,7 @@ public class HRR {
     private String Abnormal;
     @Column(name = "time")
     @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
-    private LocalDateTime time;
-    private  String test;
+    private Time time;
+
 }
 
