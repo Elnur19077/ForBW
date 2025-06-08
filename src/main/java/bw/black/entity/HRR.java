@@ -34,7 +34,6 @@ public class HRR {
     private String Temperature;
     private String Abnormal;
     @Column(name = "time")
-    private Time time;
-
+    @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+    private LocalDateTime time;
 }
-
