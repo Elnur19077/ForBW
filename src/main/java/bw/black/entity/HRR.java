@@ -1,10 +1,12 @@
 package bw.black.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import oracle.sql.TIMESTAMP;
 import org.hibernate.annotations.DynamicInsert;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -24,8 +26,8 @@ public class HRR {
     private String personId;
     private String Name;
     private String Department;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date time;
+    @JsonFormat(pattern = "dd-MMM-yy hh.mm.ss.SSSSSSSSS a", locale = "en")
+    private LocalDateTime time;
 
     private String attendanceStatus;
     private String attendanceCheckPoint;
