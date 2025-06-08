@@ -34,7 +34,6 @@ public class HRR {
     private String HandlingType;
     private String Temperature;
     private String Abnormal;
-    @Temporal(TemporalType.TIMESTAMP)
-    @JsonFormat(pattern = "dd-MMM-yy hh.mm.ss.SSSSSSSSS a", locale = "en")
-    private Date timee;
+
+    private String timee;
 }
