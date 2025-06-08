@@ -35,5 +35,6 @@ public class HRR {
     @Column(name = "time")
     @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
     private LocalDateTime time;
+    private  String test;
 }
 
