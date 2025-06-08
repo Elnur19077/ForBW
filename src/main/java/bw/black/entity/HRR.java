@@ -1,12 +1,12 @@
 package bw.black.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import bw.black.confiq.CustomLocalDateTimeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.*;
-import oracle.sql.TIMESTAMP;
 import org.hibernate.annotations.DynamicInsert;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "HRR")
@@ -25,8 +25,6 @@ public class HRR {
     private String personId;
     private String Name;
     private String Department;
-
-
     private String attendanceStatus;
     private String attendanceCheckPoint;
     private String customName;
@@ -34,6 +32,8 @@ public class HRR {
     private String HandlingType;
     private String Temperature;
     private String Abnormal;
-
-    private String timee;
+    @Column(name = "time")
+    @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
+    private LocalDateTime time;
 }
+

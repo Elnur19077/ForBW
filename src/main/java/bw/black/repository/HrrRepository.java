@@ -19,12 +19,12 @@ public interface HrrRepository extends JpaRepository<HRR, Long> {
             NAME,
             DEPARTMENT,
             TRUNC(Timee),
-            MIN(Timee)
+            MIN(Time)
         FROM HRR
         WHERE Time BETWEEN TO_DATE(:startDate, 'YYYY-MM-DD') 
                       AND TO_DATE(:endDate, 'YYYY-MM-DD') + INTERVAL '1' DAY - INTERVAL '1' SECOND
-        GROUP BY PERSON_ID, NAME, DEPARTMENT, TRUNC(Timee)
-        ORDER BY TRUNC(Timee), PERSON_ID
+        GROUP BY PERSON_ID, NAME, DEPARTMENT, TRUNC(Time)
+        ORDER BY TRUNC(Time), PERSON_ID
         """, nativeQuery = true)
     List<Object[]> getAttendance(@Param("startDate") String startDate,
                                  @Param("endDate") String endDate);
