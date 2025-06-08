@@ -18,16 +18,12 @@ public class HRR {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String personId;
     private String name;
     private String department;
-
     @Column(name = "time", columnDefinition = "TIMESTAMP")
     @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
     private LocalDateTime time;
-
-
     private String attendanceStatus;
     private String attendanceCheckPoint;
     private String customName;
