@@ -14,21 +14,21 @@ public interface HrrRepository extends JpaRepository<HRR, Long> {
 
 
     @Query(value = """
-            SELECT person_id,
-                   name,
-                   department,
-                   "pg_catalog".DATE_TRUNC('day', time) AS attendance_date,
-                   MIN(time) AS first_check_in
-            FROM HRR
-            WHERE time >= CAST(:startDate AS DATE)
-              AND time < CAST(:endDate AS DATE)
+        SELECT
+           person_id,
+           name,
+           department,
+           DATE_TRUNC('day', time) AS day,
+           MIN(time) AS min_time
+            FROM hrr
+            WHERE time BETWEEN TO_TIMESTAMP(:startDate, 'YYYY-MM-DD')
+                      AND TO_TIMESTAMP(:endDate, 'YYYY-MM-DD') + INTERVAL '1 day' - INTERVAL '1 second'
             GROUP BY person_id, name, department, DATE_TRUNC('day', time)
-            ORDER BY attendance_date, person_id;
-            """, nativeQuery = true)
+            ORDER BY DATE_TRUNC('day', time), person_id;
+       
+        """, nativeQuery = true)
     List<Object[]> getAttendance(@Param("startDate") String startDate,
                                  @Param("endDate") String endDate);
+
+
 }
-
-
-
-
