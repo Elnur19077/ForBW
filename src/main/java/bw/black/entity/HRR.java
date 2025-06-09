@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -22,9 +23,8 @@ public class HRR {
     private String personId;
     private String name;
     private String department;
-    @Column(name = "time", columnDefinition = "TIMESTAMP")
-    @JsonDeserialize(using = CustomLocalDateTimeDeserializer.class)
-    private Timestamp time;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date time;
     private String attendanceStatus;
     private String attendanceCheckPoint;
     private String customName;
