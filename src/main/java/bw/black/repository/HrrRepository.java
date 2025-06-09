@@ -19,7 +19,7 @@ public interface HrrRepository extends JpaRepository<HRR, Long> {
                    department,
                    "pg_catalog".DATE_TRUNC('day', time) AS attendance_date,
                    MIN(time) AS first_check_in
-            FROM hrr
+            FROM HRR
             WHERE time >= CAST(:startDate AS DATE)
               AND time < CAST(:endDate AS DATE)
             GROUP BY person_id, name, department, DATE_TRUNC('day', time)
