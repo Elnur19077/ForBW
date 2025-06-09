@@ -1,13 +1,11 @@
 package bw.black.entity;
 
-import bw.black.confiq.CustomLocalDateTimeDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
@@ -23,8 +21,8 @@ public class HRR {
     private String personId;
     private String name;
     private String department;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date time;
+    @Column(name = "time", columnDefinition = "TIMESTAMP(6)")
+    private Timestamp time;
     private String attendanceStatus;
     private String attendanceCheckPoint;
     private String customName;
