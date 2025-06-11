@@ -2,14 +2,14 @@ package bw.black.dto.request;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class CostCalculationRequest {
-    private Double basePrice;
-    private Integer unitCount;
-    private String hsCode;
+    private List<ProductRequest> products;
 
     private Double transportCost;
-    private Double customsDuty;
+    private Double customsDuty; // Əgər fərdi hsCodeDuty verilməyibsə istifadə olunur
     private Double brokerCost;
     private Double antiMonopolyFee;
 
