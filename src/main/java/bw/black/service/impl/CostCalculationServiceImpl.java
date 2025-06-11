@@ -23,87 +23,98 @@ public class CostCalculationServiceImpl implements CostCalculationService {
 
     @Override
     public CostCalculationResponse calculate(CostCalculationRequest request) {
-        List<SingleProductResponse> productResponses = new ArrayList<>();
 
-        double totalTransportCost = request.getTransportCost() != null ? request.getTransportCost() : 0;
-        double brokerCost = request.getBrokerCost() != null ? request.getBrokerCost() : 200;
-        double profitPercentage = request.getProfitPercentage() != null ? request.getProfitPercentage() : 25;
-        int guaranteeMonths = request.getGuaranteeMonths() != null ? request.getGuaranteeMonths() : 0;
-        double employeeBonusPercent = request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0;
-        double customerBonusPercent = request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0;
+            // NPE qarşısını almaq üçün məhsul siyahısını yoxlayırıq
+            if (request.getProducts() == null || request.getProducts().isEmpty()) {
+                throw new IllegalArgumentException("Products list cannot be null or empty.");
+            }
 
-        int productCount = request.getProducts().size();
-        double sharedTransportPerProduct = productCount > 0 ? totalTransportCost / productCount : 0;
+            List<SingleProductResponse> productResponses = new ArrayList<>();
 
-        double totalFinalPrice = 0;
-        double totalNetProfit = 0;
-        double totalEmployeeBonus = 0;
-        double totalCustomerBonus = 0;
+            double totalTransportCost = request.getTransportCost() != null ? request.getTransportCost() : 0;
+            double brokerCost = request.getBrokerCost() != null ? request.getBrokerCost() : 200;
+            double profitPercentage = request.getProfitPercentage() != null ? request.getProfitPercentage() : 25;
+            int guaranteeMonths = request.getGuaranteeMonths() != null ? request.getGuaranteeMonths() : 0;
+            double employeeBonusPercent = request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0;
+            double customerBonusPercent = request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0;
 
-        for (ProductRequest product : request.getProducts()) {
-            double basePrice = product.getBasePrice();
-            int unitCount = product.getUnitCount();
-            double unitPrice = basePrice * unitCount;
+            int productCount = request.getProducts().size();
+            double sharedTransportPerProduct = totalTransportCost / productCount;
 
-            double hsCodeDuty = product.getHsCodeDuty() != null ? product.getHsCodeDuty() : request.getCustomsDuty();
-            double customsBase = unitPrice + sharedTransportPerProduct;
-            double customsFee = customsBase * hsCodeDuty / 100;
+            double totalFinalPrice = 0;
+            double totalNetProfit = 0;
+            double totalEmployeeBonus = 0;
+            double totalCustomerBonus = 0;
 
-            double antiMonopolyFee = product.getAntiMonopolyFee() != null
-                    ? product.getAntiMonopolyFee()
-                    : (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
+            for (ProductRequest product : request.getProducts()) {
+                double basePrice = product.getBasePrice();
+                int unitCount = product.getUnitCount();
+                double unitPrice = basePrice * unitCount;
 
-            double totalCost = unitPrice + sharedTransportPerProduct + customsFee + antiMonopolyFee;
+                double hsCodeDuty = product.getHsCodeDuty() != null
+                        ? product.getHsCodeDuty()
+                        : request.getCustomsDuty();
 
-            double finalPrice = totalCost * (1 + profitPercentage / 100);
-            double vatAmount = finalPrice * 0.18;
+                double customsBase = unitPrice + sharedTransportPerProduct;
+                double customsFee = customsBase * hsCodeDuty / 100;
 
-            double grossProfit = finalPrice - totalCost;
-            double netProfit = grossProfit * 0.80 * 0.95 * 0.98;
+                double antiMonopolyFee = product.getAntiMonopolyFee() != null
+                        ? product.getAntiMonopolyFee()
+                        : (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
 
-            double employeeBonus = netProfit * employeeBonusPercent / 100;
-            double customerBonus = netProfit * customerBonusPercent / 100;
-            double netProfitAfterBonuses = netProfit - employeeBonus - customerBonus;
+                double totalCost = unitPrice + sharedTransportPerProduct + customsFee + antiMonopolyFee;
 
-            totalFinalPrice += finalPrice;
-            totalNetProfit += netProfitAfterBonuses;
-            totalEmployeeBonus += employeeBonus;
-            totalCustomerBonus += customerBonus;
+                double finalPrice = totalCost * (1 + profitPercentage / 100);
+                double vatAmount = finalPrice * 0.18;
 
-            productResponses.add(SingleProductResponse.builder()
-                    .hsCode(product.getHsCode())
-                    .unitPrice(unitPrice)
-                    .customsFee(customsFee)
-                    .totalCost(totalCost)
-                    .finalPrice(finalPrice)
-                    .vatAmount(vatAmount)
-                    .grossProfit(grossProfit)
-                    .netProfit(netProfitAfterBonuses)
-                    .build());
+                double grossProfit = finalPrice - totalCost;
+                double netProfit = grossProfit * 0.80 * 0.95 * 0.98;
+
+                double employeeBonus = netProfit * employeeBonusPercent / 100;
+                double customerBonus = netProfit * customerBonusPercent / 100;
+                double netProfitAfterBonuses = netProfit - employeeBonus - customerBonus;
+
+                totalFinalPrice += finalPrice;
+                totalNetProfit += netProfitAfterBonuses;
+                totalEmployeeBonus += employeeBonus;
+                totalCustomerBonus += customerBonus;
+
+                productResponses.add(SingleProductResponse.builder()
+                        .hsCode(product.getHsCode())
+                        .unitPrice(unitPrice)
+                        .customsFee(customsFee)
+                        .totalCost(totalCost)
+                        .finalPrice(finalPrice)
+                        .vatAmount(vatAmount)
+                        .grossProfit(grossProfit)
+                        .netProfit(netProfitAfterBonuses)
+                        .build());
+            }
+
+            // Bank zəmanəti ümumi final price üzərində
+            double totalBankGuarantee = totalFinalPrice * 0.0025 * guaranteeMonths;
+
+            // Broker qiyməti totalFinalPrice-ə əlavə olunur
+            double grandTotalFinalPrice = totalFinalPrice + brokerCost;
+
+            double yearlyOfficeCost = 120_000;
+            double monthlyOfficeCost = 10_000;
+            double turnover = 1_500_000;
+
+            return CostCalculationResponse.builder()
+                    .products(productResponses)
+                    .totalFinalPrice(grandTotalFinalPrice)
+                    .totalNetProfit(totalNetProfit)
+                    .totalEmployeeBonus(totalEmployeeBonus)
+                    .totalCustomerBonus(totalCustomerBonus)
+                    .totalBankGuaranteeAmount(totalBankGuarantee)
+                    .yearlyCoveragePercentage((totalNetProfit / yearlyOfficeCost) * 100)
+                    .monthlyCoveragePercentage((totalNetProfit / monthlyOfficeCost) * 100)
+                    .turnoverCoveragePercentage((grandTotalFinalPrice / turnover) * 100)
+                    .build();
         }
 
-        // Bank zəmanəti ümumi final price üzərində
-        double totalBankGuarantee = totalFinalPrice * 0.0025 * guaranteeMonths;
-
-        // Broker qiyməti totalFinalPrice-ə əlavə olunur
-        double grandTotalFinalPrice = totalFinalPrice + brokerCost;
-
-        double yearlyOfficeCost = 120_000;
-        double monthlyOfficeCost = 10_000;
-        double turnover = 1_500_000;
-
-        return CostCalculationResponse.builder()
-                .products(productResponses)
-                .totalFinalPrice(grandTotalFinalPrice)
-                .totalNetProfit(totalNetProfit)
-                .totalEmployeeBonus(totalEmployeeBonus)
-                .totalCustomerBonus(totalCustomerBonus)
-                .totalBankGuaranteeAmount(totalBankGuarantee)
-                .yearlyCoveragePercentage((totalNetProfit / yearlyOfficeCost) * 100)
-                .monthlyCoveragePercentage((totalNetProfit / monthlyOfficeCost) * 100)
-                .turnoverCoveragePercentage((grandTotalFinalPrice / turnover) * 100)
-                .build();
     }
 
-}
+
 
