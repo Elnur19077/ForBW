@@ -4,7 +4,7 @@ import bw.black.dto.request.CostCalculationRequest;
 import bw.black.dto.request.ProductRequest;
 import bw.black.dto.response.CostCalculationResponse;
 import bw.black.dto.response.SingleProductResponse;
-import bw.black.entity.CostCalculation;
+
 import bw.black.repository.CostCalculationRepository;
 import bw.black.service.CostCalculationService;
 import jakarta.transaction.Transactional;
@@ -25,14 +25,6 @@ public class CostCalculationServiceImpl implements CostCalculationService {
     public CostCalculationResponse calculate(CostCalculationRequest request) {
         List<SingleProductResponse> productResponses = new ArrayList<>();
 
-        double totalUnitPriceSum = 0;
-        double totalCustomsFee = 0;
-        double totalCostBeforeExtras = 0; // transport və broker hələ əlavə olunmayıb
-        double totalFinalPrice = 0;
-        double totalNetProfit = 0;
-        double totalEmployeeBonus = 0;
-        double totalCustomerBonus = 0;
-
         double totalTransportCost = request.getTransportCost() != null ? request.getTransportCost() : 0;
         double brokerCost = request.getBrokerCost() != null ? request.getBrokerCost() : 200;
         double profitPercentage = request.getProfitPercentage() != null ? request.getProfitPercentage() : 25;
@@ -40,19 +32,28 @@ public class CostCalculationServiceImpl implements CostCalculationService {
         double employeeBonusPercent = request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0;
         double customerBonusPercent = request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0;
 
+        int productCount = request.getProducts().size();
+        double sharedTransportPerProduct = productCount > 0 ? totalTransportCost / productCount : 0;
+
+        double totalFinalPrice = 0;
+        double totalNetProfit = 0;
+        double totalEmployeeBonus = 0;
+        double totalCustomerBonus = 0;
+
         for (ProductRequest product : request.getProducts()) {
             double basePrice = product.getBasePrice();
             int unitCount = product.getUnitCount();
             double unitPrice = basePrice * unitCount;
 
             double hsCodeDuty = product.getHsCodeDuty() != null ? product.getHsCodeDuty() : request.getCustomsDuty();
-            double customsFee = unitPrice * hsCodeDuty / 100;
+            double customsBase = unitPrice + sharedTransportPerProduct;
+            double customsFee = customsBase * hsCodeDuty / 100;
 
             double antiMonopolyFee = product.getAntiMonopolyFee() != null
                     ? product.getAntiMonopolyFee()
                     : (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
 
-            double totalCost = unitPrice + customsFee + antiMonopolyFee; // transport və broker əlavə olunmur burada
+            double totalCost = unitPrice + sharedTransportPerProduct + customsFee + antiMonopolyFee;
 
             double finalPrice = totalCost * (1 + profitPercentage / 100);
             double vatAmount = finalPrice * 0.18;
@@ -62,13 +63,8 @@ public class CostCalculationServiceImpl implements CostCalculationService {
 
             double employeeBonus = netProfit * employeeBonusPercent / 100;
             double customerBonus = netProfit * customerBonusPercent / 100;
-
             double netProfitAfterBonuses = netProfit - employeeBonus - customerBonus;
 
-            // Toplamlara əlavə olunur
-            totalUnitPriceSum += unitPrice;
-            totalCustomsFee += customsFee;
-            totalCostBeforeExtras += totalCost;
             totalFinalPrice += finalPrice;
             totalNetProfit += netProfitAfterBonuses;
             totalEmployeeBonus += employeeBonus;
@@ -86,11 +82,11 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                     .build());
         }
 
-        // Ümumi bank zəmanəti final qiymət üzərindən 0.25% / ay
+        // Bank zəmanəti ümumi final price üzərində
         double totalBankGuarantee = totalFinalPrice * 0.0025 * guaranteeMonths;
 
-        // Transport və broker yekun nəticəyə bir dəfə əlavə olunur
-        double grandTotalCost = totalCostBeforeExtras + totalTransportCost + brokerCost;
+        // Broker qiyməti totalFinalPrice-ə əlavə olunur
+        double grandTotalFinalPrice = totalFinalPrice + brokerCost;
 
         double yearlyOfficeCost = 120_000;
         double monthlyOfficeCost = 10_000;
@@ -98,14 +94,14 @@ public class CostCalculationServiceImpl implements CostCalculationService {
 
         return CostCalculationResponse.builder()
                 .products(productResponses)
-                .totalFinalPrice(totalFinalPrice)
+                .totalFinalPrice(grandTotalFinalPrice)
                 .totalNetProfit(totalNetProfit)
                 .totalEmployeeBonus(totalEmployeeBonus)
                 .totalCustomerBonus(totalCustomerBonus)
                 .totalBankGuaranteeAmount(totalBankGuarantee)
                 .yearlyCoveragePercentage((totalNetProfit / yearlyOfficeCost) * 100)
                 .monthlyCoveragePercentage((totalNetProfit / monthlyOfficeCost) * 100)
-                .turnoverCoveragePercentage((totalFinalPrice / turnover) * 100)
+                .turnoverCoveragePercentage((grandTotalFinalPrice / turnover) * 100)
                 .build();
     }
 
