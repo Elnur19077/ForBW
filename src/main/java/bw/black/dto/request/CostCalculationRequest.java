@@ -5,11 +5,17 @@ import lombok.Data;
 @Data
 public class CostCalculationRequest {
     private Double basePrice;
+    private Integer unitCount;
+    private String hsCode;
+
     private Double transportCost;
     private Double customsDuty;
-    private Double brokerCost;           // optional, default 200
-    private Double antiMonopolyFee;      // optional, default 100
+    private Double brokerCost;
+    private Double antiMonopolyFee;
+
     private Double profitPercentage;
-    // 0, 5, 15 (%)
+    private Double employeeBonusPercent;
+    private Double customerBonusPercent;
+    private Integer guaranteeMonths;
 
 }
