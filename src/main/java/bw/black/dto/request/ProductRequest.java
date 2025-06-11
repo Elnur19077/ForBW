@@ -11,5 +11,6 @@ public class ProductRequest {
     private Double basePrice;
     private Integer unitCount;
     private String hsCode;
-    private Double hsCodeDuty; // fərdi gömrük faizi
+    private Double hsCodeDuty;
+    private Double antiMonopolyFee; // fərdi gömrük faizi
 }

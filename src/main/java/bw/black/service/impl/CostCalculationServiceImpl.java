@@ -31,47 +31,61 @@ public class CostCalculationServiceImpl implements CostCalculationService {
         double totalCustomerBonus = 0;
         double totalBankGuarantee = 0;
 
+        // Transport ümumi olaraq bir dəfə əlavə olunur, məhsulların üzərinə bölünmür
+        double totalTransportCost = request.getTransportCost() != null ? request.getTransportCost() : 0;
+
+        // Broker və antiMonopolyFee məhsul başına ayrıca gəlir
+        double brokerCost = request.getBrokerCost() != null ? request.getBrokerCost() : 200;
+
         for (ProductRequest product : request.getProducts()) {
             double basePrice = product.getBasePrice();
             int unitCount = product.getUnitCount();
             double unitPrice = basePrice * unitCount;
-            double hsCodeDuty = product.getHsCodeDuty() != null ? product.getHsCodeDuty() : request.getCustomsDuty();
-            double customsFee = (unitPrice + request.getTransportCost()) * hsCodeDuty / 100;
 
-            double totalCost = unitPrice + request.getTransportCost()
-                    + customsFee
-                    + (request.getBrokerCost() != null ? request.getBrokerCost() : 200)
-                    + (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
+            // Customs duty individual (product səviyyəsində varsa) və ya ümumi
+            double hsCodeDuty = product.getHsCodeDuty() != null ? product.getHsCodeDuty() : request.getCustomsDuty();
+
+            // Customs fee hesabı: unitPrice + transport (ümumi) üzərində faiz
+            double customsFee = (unitPrice + totalTransportCost) * hsCodeDuty / 100;
+
+            // AntiMonopolyFee hər məhsul üçün ayrıca, ya məhsuldan, ya da requestdən, default 100
+            double antiMonopolyFee = product.getAntiMonopolyFee() != null ? product.getAntiMonopolyFee() : (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
+
+            // Burada diqqət: transport ümumi olaraq əlavə olunur, məhsulun üzərinə ayrıca yox
+            double totalCost = unitPrice + totalTransportCost + customsFee + brokerCost + antiMonopolyFee;
 
             double profitPercentage = request.getProfitPercentage() != null ? request.getProfitPercentage() : 25;
             double finalPrice = totalCost * (1 + profitPercentage / 100);
 
             double vatAmount = finalPrice * 0.18;
-            double guaranteeMonths = request.getGuaranteeMonths() != null ? request.getGuaranteeMonths() : 0;
+            int guaranteeMonths = request.getGuaranteeMonths() != null ? request.getGuaranteeMonths() : 0;
             double bankGuarantee = finalPrice * (0.0025 * guaranteeMonths);
 
             double grossProfit = finalPrice - totalCost;
             double netProfit = grossProfit * 0.80 * 0.95 * 0.98;
 
-            double employeeBonus = netProfit * (request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0) / 100;
-            double customerBonus = netProfit * (request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0) / 100;
+            double employeeBonusPercent = request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0;
+            double customerBonusPercent = request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0;
+
+            double employeeBonus = netProfit * employeeBonusPercent / 100;
+            double customerBonus = netProfit * customerBonusPercent / 100;
 
             double netProfitAfterBonuses = netProfit - employeeBonus - customerBonus;
 
-            // Save individual product to DB (optional per product)
+            // DB-yə qeyd (istəyə bağlı)
             repository.save(
                     CostCalculation.builder()
                             .basePrice(basePrice)
                             .unitCount(unitCount)
                             .hsCode(product.getHsCode())
-                            .transportCost(request.getTransportCost())
+                            .transportCost(totalTransportCost) // ümumi transport burada qeyd olunur
                             .customsDuty(hsCodeDuty)
-                            .brokerCost(request.getBrokerCost())
-                            .antiMonopolyFee(request.getAntiMonopolyFee())
+                            .brokerCost(brokerCost)
+                            .antiMonopolyFee(antiMonopolyFee)
                             .profitPercentage(profitPercentage)
-                            .employeeBonusPercent(request.getEmployeeBonusPercent())
-                            .customerBonusPercent(request.getCustomerBonusPercent())
-                            .guaranteeMonths(request.getGuaranteeMonths())
+                            .employeeBonusPercent(employeeBonusPercent)
+                            .customerBonusPercent(customerBonusPercent)
+                            .guaranteeMonths(guaranteeMonths)
                             .unitPrice(unitPrice)
                             .customsFee(customsFee)
                             .totalCost(totalCost)
@@ -119,5 +133,6 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                 .turnoverCoveragePercentage((totalFinalPrice / turnover) * 100)
                 .build();
     }
+
 }
 
