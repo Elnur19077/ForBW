@@ -97,6 +97,7 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                 .yearlyCoveragePercentage(yearlyCoverage)
                 .monthlyCoveragePercentage(monthlyCoverage)
                 .turnoverCoveragePercentage(turnoverCoverage)
+                .bankGuaranteeAmount(bankGuarantee)
                 .build();
     }
 }
