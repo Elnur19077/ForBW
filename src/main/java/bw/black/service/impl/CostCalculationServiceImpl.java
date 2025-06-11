@@ -25,85 +25,54 @@ public class CostCalculationServiceImpl implements CostCalculationService {
     public CostCalculationResponse calculate(CostCalculationRequest request) {
         List<SingleProductResponse> productResponses = new ArrayList<>();
 
+        double totalUnitPriceSum = 0;
+        double totalCustomsFee = 0;
+        double totalCostBeforeExtras = 0; // transport və broker hələ əlavə olunmayıb
         double totalFinalPrice = 0;
         double totalNetProfit = 0;
         double totalEmployeeBonus = 0;
         double totalCustomerBonus = 0;
-        double totalBankGuarantee = 0;
 
-        // Transport ümumi olaraq bir dəfə əlavə olunur, məhsulların üzərinə bölünmür
         double totalTransportCost = request.getTransportCost() != null ? request.getTransportCost() : 0;
-
-        // Broker və antiMonopolyFee məhsul başına ayrıca gəlir
         double brokerCost = request.getBrokerCost() != null ? request.getBrokerCost() : 200;
+        double profitPercentage = request.getProfitPercentage() != null ? request.getProfitPercentage() : 25;
+        int guaranteeMonths = request.getGuaranteeMonths() != null ? request.getGuaranteeMonths() : 0;
+        double employeeBonusPercent = request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0;
+        double customerBonusPercent = request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0;
 
         for (ProductRequest product : request.getProducts()) {
             double basePrice = product.getBasePrice();
             int unitCount = product.getUnitCount();
             double unitPrice = basePrice * unitCount;
 
-            // Customs duty individual (product səviyyəsində varsa) və ya ümumi
             double hsCodeDuty = product.getHsCodeDuty() != null ? product.getHsCodeDuty() : request.getCustomsDuty();
+            double customsFee = unitPrice * hsCodeDuty / 100;
 
-            // Customs fee hesabı: unitPrice + transport (ümumi) üzərində faiz
-            double customsFee = (unitPrice + totalTransportCost) * hsCodeDuty / 100;
+            double antiMonopolyFee = product.getAntiMonopolyFee() != null
+                    ? product.getAntiMonopolyFee()
+                    : (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
 
-            // AntiMonopolyFee hər məhsul üçün ayrıca, ya məhsuldan, ya da requestdən, default 100
-            double antiMonopolyFee = product.getAntiMonopolyFee() != null ? product.getAntiMonopolyFee() : (request.getAntiMonopolyFee() != null ? request.getAntiMonopolyFee() : 100);
+            double totalCost = unitPrice + customsFee + antiMonopolyFee; // transport və broker əlavə olunmur burada
 
-            // Burada diqqət: transport ümumi olaraq əlavə olunur, məhsulun üzərinə ayrıca yox
-            double totalCost = unitPrice + totalTransportCost + customsFee + brokerCost + antiMonopolyFee;
-
-            double profitPercentage = request.getProfitPercentage() != null ? request.getProfitPercentage() : 25;
             double finalPrice = totalCost * (1 + profitPercentage / 100);
-
             double vatAmount = finalPrice * 0.18;
-            int guaranteeMonths = request.getGuaranteeMonths() != null ? request.getGuaranteeMonths() : 0;
-            double bankGuarantee = finalPrice * (0.0025 * guaranteeMonths);
 
             double grossProfit = finalPrice - totalCost;
             double netProfit = grossProfit * 0.80 * 0.95 * 0.98;
-
-            double employeeBonusPercent = request.getEmployeeBonusPercent() != null ? request.getEmployeeBonusPercent() : 0;
-            double customerBonusPercent = request.getCustomerBonusPercent() != null ? request.getCustomerBonusPercent() : 0;
 
             double employeeBonus = netProfit * employeeBonusPercent / 100;
             double customerBonus = netProfit * customerBonusPercent / 100;
 
             double netProfitAfterBonuses = netProfit - employeeBonus - customerBonus;
 
-            // DB-yə qeyd (istəyə bağlı)
-            repository.save(
-                    CostCalculation.builder()
-                            .basePrice(basePrice)
-                            .unitCount(unitCount)
-                            .hsCode(product.getHsCode())
-                            .transportCost(totalTransportCost) // ümumi transport burada qeyd olunur
-                            .customsDuty(hsCodeDuty)
-                            .brokerCost(brokerCost)
-                            .antiMonopolyFee(antiMonopolyFee)
-                            .profitPercentage(profitPercentage)
-                            .employeeBonusPercent(employeeBonusPercent)
-                            .customerBonusPercent(customerBonusPercent)
-                            .guaranteeMonths(guaranteeMonths)
-                            .unitPrice(unitPrice)
-                            .customsFee(customsFee)
-                            .totalCost(totalCost)
-                            .finalPrice(finalPrice)
-                            .vatAmount(vatAmount)
-                            .bankGuarantee(bankGuarantee)
-                            .grossProfit(grossProfit)
-                            .netProfit(netProfitAfterBonuses)
-                            .employeeBonus(employeeBonus)
-                            .customerBonus(customerBonus)
-                            .build()
-            );
-
+            // Toplamlara əlavə olunur
+            totalUnitPriceSum += unitPrice;
+            totalCustomsFee += customsFee;
+            totalCostBeforeExtras += totalCost;
             totalFinalPrice += finalPrice;
             totalNetProfit += netProfitAfterBonuses;
             totalEmployeeBonus += employeeBonus;
             totalCustomerBonus += customerBonus;
-            totalBankGuarantee += bankGuarantee;
 
             productResponses.add(SingleProductResponse.builder()
                     .hsCode(product.getHsCode())
@@ -116,6 +85,12 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                     .netProfit(netProfitAfterBonuses)
                     .build());
         }
+
+        // Ümumi bank zəmanəti final qiymət üzərindən 0.25% / ay
+        double totalBankGuarantee = totalFinalPrice * 0.0025 * guaranteeMonths;
+
+        // Transport və broker yekun nəticəyə bir dəfə əlavə olunur
+        double grandTotalCost = totalCostBeforeExtras + totalTransportCost + brokerCost;
 
         double yearlyOfficeCost = 120_000;
         double monthlyOfficeCost = 10_000;
