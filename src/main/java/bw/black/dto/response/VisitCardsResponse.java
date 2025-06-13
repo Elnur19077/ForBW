@@ -1,22 +1,15 @@
-package bw.black.entity;
+package bw.black.dto.response;
 
-import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.DynamicInsert;
 
-@Entity
-@Table(name = "Visit_card")
-@Setter
-@Getter
-@DynamicInsert
+@Data
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-public class VisitCards {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "visitcards_add_seq")
-    @SequenceGenerator(name = "visitcards_add_seq", sequenceName = "VISITCARDS_ADD_SEQ", allocationSize = 1)
+public class VisitCardsResponse {
     private Long id;
     private String name;
     private String company;
