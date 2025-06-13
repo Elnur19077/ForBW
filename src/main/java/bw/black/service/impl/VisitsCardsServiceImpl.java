@@ -1,7 +1,8 @@
-/*
+
 package bw.black.service.impl;
 
 import bw.black.dto.request.VisitCardsRequest;
+import bw.black.dto.response.RespStatus;
 import bw.black.dto.response.Response;
 import bw.black.dto.response.VisitCardsResponse;
 import bw.black.entity.Contacts;
@@ -14,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,10 +33,16 @@ public class VisitsCardsServiceImpl implements VisitsCardsService {
             if (contactss.isEmpty()) {
                 throw new ContactsException("No contacts found", ExceptionConstant.INTERNAL_EXCEPTION);
             }
+          List<VisitCardsResponse> visitCardsResponses =contactss.stream().map(this::convertVists).toList();
+            response.setT(visitCardsResponses);
 
-
-            return null;
-        }
+        } catch (ContactsException ex) {
+            ex.printStackTrace();
+            response.setStatus(new RespStatus(ex.getCode(), ex.getMessage()));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            response.setStatus(new RespStatus(ExceptionConstant.INTERNAL_EXCEPTION, "Internal error"));
+        }return response;
     }
 
     @Override
@@ -77,4 +85,3 @@ public class VisitsCardsServiceImpl implements VisitsCardsService {
                 .build();
     }
 }
-*/

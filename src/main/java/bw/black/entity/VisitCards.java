@@ -1,4 +1,4 @@
-/*
+
 package bw.black.entity;
 
 import jakarta.persistence.*;
@@ -35,4 +35,4 @@ public class VisitCards {
     private String email2;
 }
 
- */
+
