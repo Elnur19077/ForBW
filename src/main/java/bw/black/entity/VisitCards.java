@@ -1,3 +1,4 @@
+/*
 package bw.black.entity;
 
 import jakarta.persistence.*;
@@ -33,3 +34,5 @@ public class VisitCards {
     private String phone3;
     private String email2;
 }
+
+ */
