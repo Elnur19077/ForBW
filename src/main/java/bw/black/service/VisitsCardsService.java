@@ -1,3 +1,4 @@
+/*
 package bw.black.service;
 
 import bw.black.dto.request.VisitCardsRequest;
@@ -19,3 +20,6 @@ public interface VisitsCardsService {
 
     Response<VisitCardsResponse> deleteVisit(Long id);
 }
+
+
+ */
