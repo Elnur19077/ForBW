@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -127,11 +129,22 @@ public class RfqRequestServiceImpl implements RfqRequestService {
         if (file == null || file.isEmpty()) return null;
 
         try {
-            Files.createDirectories(Paths.get(uploadDir));
+            // Faylın saxlanılacağı folder
+            File uploadDirectory = new File(uploadDir);
+            if (!uploadDirectory.exists()) {
+                uploadDirectory.mkdirs();
+            }
+
+            // Faylın adı
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir + fileName);
-            file.transferTo(filePath.toFile());
-            return filePath.toString();
+            File savedFile = new File(uploadDirectory, fileName);
+
+            // Faylı yaz
+            try (FileOutputStream fos = new FileOutputStream(savedFile)) {
+                fos.write(file.getBytes());
+            }
+
+            return savedFile.getAbsolutePath();
         } catch (IOException e) {
             throw new RuntimeException("File saving error", e);
         }
