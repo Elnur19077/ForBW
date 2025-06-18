@@ -17,6 +17,8 @@ import io.micrometer.common.lang.NonNull;
 
 import java.io.IOException;
 
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
@@ -31,6 +33,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         String token = getJwtFromRequest(request);
+        // /uploads/ ilə başlayan sorğuları bypass et (filtrə girmədən keç)
+        if (path.startsWith("/uploads/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
         /*if (token != null && redisTemplate.opsForValue().get(token) != null) {
             throw new EshopException(ExceptionConstants.INVALID_REQUEST_DATA, "Profile logged out");
         }*/
