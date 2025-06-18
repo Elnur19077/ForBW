@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -134,19 +136,28 @@ public class RfqRequestServiceImpl implements RfqRequestService {
                 uploadDirectory.mkdirs();
             }
 
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null) {
+                originalFilename = "file";
+            }
+
+            // Fayl adını URL üçün təhlükəsiz formata çeviririk
+            String encodedFilename = URLEncoder.encode(originalFilename, StandardCharsets.UTF_8.toString());
+
+            String fileName = System.currentTimeMillis() + "_" + encodedFilename;
+
             File savedFile = new File(uploadDirectory, fileName);
 
             try (FileOutputStream fos = new FileOutputStream(savedFile)) {
                 fos.write(file.getBytes());
             }
 
-            // Geri disk yolu yox, HTTP URL qaytar
+            // HTTP URL qaytarırıq
             return "/uploads/" + fileName;
+
         } catch (IOException e) {
             throw new RuntimeException("File saving error", e);
-        }
-    }
+        }}
 
 }
 
