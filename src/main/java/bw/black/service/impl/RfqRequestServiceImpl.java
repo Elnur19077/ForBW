@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RfqRequestServiceImpl implements RfqRequestService {
     private final RfqRequestRepository repository;
-    private final String uploadDir = "C:/Users/Victus/Desktop/BwAdminGIT/spring-boot-spring-security-jwt-authentication/ForBW/src/main/resources/static/uploads/";
+    private final String uploadDir = "uploads/";
 
 
 
@@ -129,24 +129,24 @@ public class RfqRequestServiceImpl implements RfqRequestService {
         if (file == null || file.isEmpty()) return null;
 
         try {
-            // Faylın saxlanılacağı folder
             File uploadDirectory = new File(uploadDir);
             if (!uploadDirectory.exists()) {
                 uploadDirectory.mkdirs();
             }
 
-            // Faylın adı
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             File savedFile = new File(uploadDirectory, fileName);
 
-            // Faylı yaz
             try (FileOutputStream fos = new FileOutputStream(savedFile)) {
                 fos.write(file.getBytes());
             }
 
-            return savedFile.getAbsolutePath();
+            // Geri disk yolu yox, HTTP URL qaytar
+            return "/uploads/" + fileName;
         } catch (IOException e) {
             throw new RuntimeException("File saving error", e);
         }
     }
+
 }
+
