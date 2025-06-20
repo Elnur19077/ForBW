@@ -32,13 +32,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        String token = getJwtFromRequest(request);
+
+        String path = request.getServletPath();
         // /uploads/ ilə başlayan sorğuları bypass et (filtrə girmədən keç)
         if (path.startsWith("/uploads/")) {
             filterChain.doFilter(request, response);
             return;
         }
-
+        String token = getJwtFromRequest(request);
 
         /*if (token != null && redisTemplate.opsForValue().get(token) != null) {
             throw new EshopException(ExceptionConstants.INVALID_REQUEST_DATA, "Profile logged out");
