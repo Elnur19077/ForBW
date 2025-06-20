@@ -22,5 +22,8 @@ public class CostCalculationResponse {
     private Double yearlyCoveragePercentage;
     private Double monthlyCoveragePercentage;
     private Double turnoverCoveragePercentage;
+    private double grossProfitToTurnoverPercentage;
+    private double netToGrossProfitEfficiency;
+
 
 }
