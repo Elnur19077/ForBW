@@ -6,20 +6,13 @@ import bw.black.dto.response.Response;
 import bw.black.dto.response.RfqRequestResponse;
 import bw.black.entity.RfqRequest;
 import bw.black.repository.RfqRequestRepository;
+import bw.black.service.CloudinaryService;
 import bw.black.service.RfqRequestService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,17 +20,24 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class RfqRequestServiceImpl implements RfqRequestService {
+
     private final RfqRequestRepository repository;
-    private final String uploadDir = "uploads/";
-
-
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public Response<RfqRequestResponse> createRfqRequest(RfqRequestRequest request) {
         Response<RfqRequestResponse> response = new Response<>();
+
         try {
-            String pdfPath = saveFile(request.getPdfFile());
-            String excelPath = saveFile(request.getExcelFile());
+            String pdfPath = null;
+            if (request.getPdfFile() != null && !request.getPdfFile().isEmpty()) {
+                pdfPath = cloudinaryService.uploadFile(request.getPdfFile());
+            }
+
+            String excelPath = null;
+            if (request.getExcelFile() != null && !request.getExcelFile().isEmpty()) {
+                excelPath = cloudinaryService.uploadFile(request.getExcelFile());
+            }
 
             RfqRequest rfq = RfqRequest.builder()
                     .requestName(request.getRequestName())
@@ -54,6 +54,7 @@ public class RfqRequestServiceImpl implements RfqRequestService {
 
             response.setT(mapToResponse(saved));
             response.setStatus(RespStatus.getSuccessMessage());
+
         } catch (Exception ex) {
             ex.printStackTrace();
             response.setStatus(new RespStatus(999, "Failed to create RFQ"));
@@ -113,6 +114,7 @@ public class RfqRequestServiceImpl implements RfqRequestService {
         }
         return response;
     }
+
     private RfqRequestResponse mapToResponse(RfqRequest rfq) {
         return RfqRequestResponse.builder()
                 .id(rfq.getId())
@@ -126,38 +128,4 @@ public class RfqRequestServiceImpl implements RfqRequestService {
                 .excelPath(rfq.getExcelPath())
                 .build();
     }
-
-    private String saveFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) return null;
-
-        try {
-            File uploadDirectory = new File(uploadDir);
-            if (!uploadDirectory.exists()) {
-                uploadDirectory.mkdirs();
-            }
-
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename == null) {
-                originalFilename = "file";
-            }
-
-            // Fayl adını URL üçün təhlükəsiz formata çeviririk
-            String encodedFilename = URLEncoder.encode(originalFilename, StandardCharsets.UTF_8.toString());
-
-            String fileName = System.currentTimeMillis() + "_" + encodedFilename;
-
-            File savedFile = new File(uploadDirectory, fileName);
-
-            try (FileOutputStream fos = new FileOutputStream(savedFile)) {
-                fos.write(file.getBytes());
-            }
-
-            // HTTP URL qaytarırıq
-            return "/uploads/" + fileName;
-
-        } catch (IOException e) {
-            throw new RuntimeException("File saving error", e);
-        }}
-
 }
-

@@ -6,9 +6,13 @@ import bw.black.dto.response.RfqRequestResponse;
 import bw.black.service.RfqRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -17,12 +21,36 @@ import java.util.List;
 public class RfqRequestController {
 
    private final  RfqRequestService rfqRequestService;
+
+
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('SUPER_ADMIN') or hasAuthority('ADMIN')or hasAuthority('OPERATOR')")
-    @PostMapping("/create")
-    public Response<RfqRequestResponse> create(@ModelAttribute RfqRequestRequest request) {
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Response<RfqRequestResponse> create(
+            @RequestParam("requestName") String requestName,
+            @RequestParam("companyName") String companyName,
+            @RequestParam("deadline") String deadlineStr,
+            @RequestParam("submitted") boolean submitted,
+            @RequestParam(value = "note", required = false) String note,
+            @RequestParam(value = "salesperson", required = false) String salesperson,
+            @RequestParam(value = "pdfFile", required = false) MultipartFile pdfFile,
+            @RequestParam(value = "excelFile", required = false) MultipartFile excelFile
+    ) {
+        LocalDateTime deadline = LocalDateTime.parse(deadlineStr);
+
+        RfqRequestRequest request = new RfqRequestRequest();
+        request.setRequestName(requestName);
+        request.setCompanyName(companyName);
+        request.setDeadline(deadline);
+        request.setSubmitted(submitted);
+        request.setNote(note);
+        request.setSalesperson(salesperson);
+        request.setPdfFile(pdfFile);
+        request.setExcelFile(excelFile);
+
         return rfqRequestService.createRfqRequest(request);
     }
+
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAuthority('SUPER_ADMIN') or hasAuthority('ADMIN')or hasAuthority('OPERATOR')")
     @GetMapping

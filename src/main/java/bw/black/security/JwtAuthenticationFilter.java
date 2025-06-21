@@ -17,8 +17,6 @@ import io.micrometer.common.lang.NonNull;
 
 import java.io.IOException;
 
-import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
-
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
