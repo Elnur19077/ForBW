@@ -155,6 +155,7 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                 .products(productResponses)
                 .totalFinalPrice(totalFinalPrice)
                 .totalNetProfit(totalNetProfit)
+                .totalGrossProfit(totalGrossProfit)
                 .totalEmployeeBonus(totalEmployeeBonus)
                 .totalCustomerBonus(totalCustomerBonus)
                 .totalBankGuaranteeAmount(totalBankGuarantee)

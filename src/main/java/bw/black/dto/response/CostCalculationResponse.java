@@ -18,6 +18,7 @@ public class CostCalculationResponse {
     private Double totalEmployeeBonus;
     private Double totalCustomerBonus;
     private Double totalBankGuaranteeAmount;
+    private Double totalGrossProfit;
 
     private Double yearlyCoveragePercentage;
     private Double monthlyCoveragePercentage;
