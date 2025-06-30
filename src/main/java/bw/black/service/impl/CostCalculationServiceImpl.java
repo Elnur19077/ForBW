@@ -5,6 +5,7 @@ import bw.black.dto.request.ProductRequest;
 import bw.black.dto.response.CostCalculationResponse;
 import bw.black.dto.response.SingleProductResponse;
 
+import bw.black.entity.CostCalculation;
 import bw.black.repository.CostCalculationRepository;
 import bw.black.service.CostCalculationService;
 import jakarta.transaction.Transactional;
@@ -50,6 +51,10 @@ public class CostCalculationServiceImpl implements CostCalculationService {
 
         double extraBeforeProfit = 45;
 
+        double yearlyOfficeCost = 120_000;
+        double monthlyOfficeCost = 10_000;
+        double turnover = 1_500_000;
+
         for (ProductRequest product : request.getProducts()) {
             double basePrice = product.getBasePrice();
             int unitCount = product.getUnitCount();
@@ -78,20 +83,16 @@ public class CostCalculationServiceImpl implements CostCalculationService {
             double grossProfit = finalPrice - costWithExtra;
             totalGrossProfit += grossProfit;
 
-            // Ofis xərci = costWithExtra-nın 10%-i
             double officeCost = costWithExtra * 0.10;
             double profitAfterOffice = grossProfit - officeCost;
 
-            // Bank zəmanəti bu məhsul üçün (ƏDV də daxil olmaqla)
             double bankGuarantee = (finalPrice + vatAmount) * 0.0025 * guaranteeMonths;
             double profitAfterBankGuarantee = profitAfterOffice - bankGuarantee;
 
-            // Mərhələli çıxılmalar
             double after20 = profitAfterBankGuarantee * 0.80;
             double after5 = after20 * 0.95;
             double netProfitBeforeBonuses = after5 * 0.98;
 
-            // Bonuslar çıxılır
             double employeeBonus = netProfitBeforeBonuses * employeeBonusPercent / 100;
             double customerBonus = netProfitBeforeBonuses * customerBonusPercent / 100;
             double netProfit = netProfitBeforeBonuses - employeeBonus - customerBonus;
@@ -111,15 +112,43 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                     .grossProfit(grossProfit)
                     .netProfit(netProfit)
                     .build());
+
+            // ➕ DATABASE-ə yaz
+            CostCalculation savedEntity = CostCalculation.builder()
+                    .basePrice(basePrice)
+                    .unitCount(unitCount)
+                    .hsCode(product.getHsCode())
+
+                    .transportCost(sharedTransportPerProduct)
+                    .customsDuty(hsCodeDuty)
+                    .brokerCost(sharedBrokerPerProduct)
+                    .antiMonopolyFee(antiMonopolyFee)
+
+                    .profitPercentage(profitPercentage)
+                    .employeeBonusPercent(employeeBonusPercent)
+                    .customerBonusPercent(customerBonusPercent)
+                    .guaranteeMonths(guaranteeMonths)
+
+                    .unitPrice(unitPrice)
+                    .customsFee(customsFee)
+                    .totalCost(totalCost)
+                    .finalPrice(finalPrice)
+                    .vatAmount(vatAmount)
+                    .bankGuarantee(bankGuarantee)
+                    .grossProfit(grossProfit)
+                    .netProfit(netProfit)
+                    .employeeBonus(employeeBonus)
+                    .customerBonus(customerBonus)
+
+                    .yearlyCoveragePercentage((grossProfit * 0.10 / yearlyOfficeCost) * 100)
+                    .monthlyCoveragePercentage((grossProfit * 0.10 / monthlyOfficeCost) * 100)
+                    .turnoverCoveragePercentage((grossProfit / turnover) * 100)
+                    .build();
+
+            repository.save(savedEntity);
         }
 
-        // Toplam bank zəmanəti: totalFinalPrice + ƏDV əsasında hesablanır
         double totalBankGuarantee = (totalFinalPrice + totalVatAmount) * 0.0025 * guaranteeMonths;
-
-        double yearlyOfficeCost = 120_000;
-        double monthlyOfficeCost = 10_000;
-        double turnover = 1_500_000;
-
         double officeCoverageAmount = totalGrossProfit * 0.10;
 
         return CostCalculationResponse.builder()
@@ -134,7 +163,6 @@ public class CostCalculationServiceImpl implements CostCalculationService {
                 .grossProfitToTurnoverPercentage((totalGrossProfit / turnover) * 100)
                 .netToGrossProfitEfficiency((totalNetProfit / totalGrossProfit) * 100)
                 .build();
-
     }
 
 
