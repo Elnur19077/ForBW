@@ -62,6 +62,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ContactsException("Employee not found", ExceptionConstant.EMPLOYEE_NOT_FOUND);
         }
 
-        return new GetEmployeeInfoResponse(employee.getName(), employee.getSurname());
+        return new GetEmployeeInfoResponse(employee.getName(), employee.getSurname(),employee.getRole());
     }
 }

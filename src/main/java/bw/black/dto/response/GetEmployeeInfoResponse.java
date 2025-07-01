@@ -1,5 +1,6 @@
 package bw.black.dto.response;
 
+import bw.black.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -8,4 +9,5 @@ import lombok.Data;
 public class GetEmployeeInfoResponse {
     private String name;
     private String surname;
+    private Role role;
 }
