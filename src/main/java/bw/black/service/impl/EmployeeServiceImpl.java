@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -27,6 +29,33 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final JwtGenerator jwtGenerator;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
+
+
+    @Override
+    public List<GetEmployeeInfoResponse> getAllActiveEmployees() {
+        List<Employee> employees = employeeRepository.findAllByActive(1);
+        return employees.stream()
+                .map(emp -> new GetEmployeeInfoResponse(emp.getName(), emp.getSurname(), emp.getRole()))
+                .toList();
+    }
+
+    @Override
+    public List<GetEmployeeInfoResponse> searchEmployeesByKeyword(String keyword) {
+        List<Employee> employees = employeeRepository.searchByKeyword(keyword);
+        return employees.stream()
+                .map(emp -> new GetEmployeeInfoResponse(emp.getName(), emp.getSurname(), emp.getRole()))
+                .toList();
+    }
+
+    @Override
+    public void deleteEmployee(Long id) {
+        Employee employee = employeeRepository.findByIdAndActive(id, 1);
+        if (employee == null) {
+            throw new ContactsException("Employee not found", ExceptionConstant.EMPLOYEE_NOT_FOUND);
+        }
+        employee.setActive(0);
+        employeeRepository.save(employee);
+    }
 
     @Override
     public void resetPassword(ResetPasswordRequest request) {

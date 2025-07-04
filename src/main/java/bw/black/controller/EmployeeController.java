@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/employees")
@@ -51,4 +53,24 @@ public class EmployeeController {
         employeeService.resetPassword(request);
         return ResponseEntity.ok("Password successfully reset");
     }
+
+    @GetMapping("/active")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<GetEmployeeInfoResponse>> getAllActiveEmployees() {
+        return ResponseEntity.ok(employeeService.getAllActiveEmployees());
     }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<GetEmployeeInfoResponse>> searchEmployees(@RequestParam String keyword) {
+        return ResponseEntity.ok(employeeService.searchEmployeesByKeyword(keyword));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.ok("Employee deleted (set active = 0)");
+    }
+
+}

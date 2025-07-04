@@ -6,6 +6,8 @@ import bw.black.dto.request.ResetPasswordRequest;
 import bw.black.dto.response.GetEmployeeInfoResponse;
 import bw.black.entity.Employee;
 
+import java.util.List;
+
 public interface EmployeeService{
     Employee createEmployee(ReqEmployee reqEmployee);
 
@@ -13,5 +15,10 @@ public interface EmployeeService{
     GetEmployeeInfoResponse getLoggedInEmployeeInfo();
     String getEncodedPasswordByEmail(String email);
     void resetPassword(ResetPasswordRequest request);
+    List<GetEmployeeInfoResponse> getAllActiveEmployees();
+
+    List<GetEmployeeInfoResponse> searchEmployeesByKeyword(String keyword);
+
+    void deleteEmployee(Long id);
 
 }
