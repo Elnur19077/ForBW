@@ -39,7 +39,14 @@ public class EmployeeServiceImpl implements EmployeeService {
        Employee savedEmployee =  employeeRepository.save(employee);
        return savedEmployee;
     }
-
+    @Override
+    public String getEncodedPasswordByEmail(String email) {
+        Employee employee = employeeRepository.findByEmailAndActive(email, 1);
+        if (employee == null) {
+            throw new ContactsException("Employee not found", ExceptionConstant.EMPLOYEE_NOT_FOUND);
+        }
+        return employee.getPassword();
+    }
     @Override
     public String login(LoginRequest request) {
         Employee employee = employeeRepository.findByEmailAndActive(request.getEmail(), EnumAvailableStatus.ACTIVE.getValue());

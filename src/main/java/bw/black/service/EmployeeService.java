@@ -10,5 +10,5 @@ public interface EmployeeService{
 
     String login(LoginRequest request);
     GetEmployeeInfoResponse getLoggedInEmployeeInfo();
-
+    String getEncodedPasswordByEmail(String email);
 }

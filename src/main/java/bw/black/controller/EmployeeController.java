@@ -8,6 +8,8 @@ import bw.black.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -36,6 +38,11 @@ public class EmployeeController {
     public String logout() {
 
         return "Logout successful";
+    }
+    @GetMapping("/password/{email}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<String> getEmployeePassword(@PathVariable String email) {
+        return ResponseEntity.ok(employeeService.getEncodedPasswordByEmail(email));
     }
 
     }
