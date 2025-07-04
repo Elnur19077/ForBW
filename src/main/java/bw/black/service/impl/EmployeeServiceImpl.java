@@ -2,6 +2,7 @@ package bw.black.service.impl;
 
 import bw.black.dto.request.LoginRequest;
 import bw.black.dto.request.ReqEmployee;
+import bw.black.dto.request.ResetPasswordRequest;
 import bw.black.dto.response.GetEmployeeInfoResponse;
 import bw.black.entity.Employee;
 import bw.black.enums.EnumAvailableStatus;
@@ -26,6 +27,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final JwtGenerator jwtGenerator;
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailsService customUserDetailsService;
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        Employee employee = employeeRepository.findByEmailAndActive(request.getEmail(), EnumAvailableStatus.ACTIVE.getValue());
+
+        if (employee == null) {
+            throw new ContactsException("Employee not found", ExceptionConstant.EMPLOYEE_NOT_FOUND);
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        employee.setPassword(encodedPassword);
+        employeeRepository.save(employee);
+    }
+
 
     @Override
     public Employee createEmployee(ReqEmployee reqEmployee) {

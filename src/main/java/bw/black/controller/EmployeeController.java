@@ -2,6 +2,7 @@ package bw.black.controller;
 
 import bw.black.dto.request.LoginRequest;
 import bw.black.dto.request.ReqEmployee;
+import bw.black.dto.request.ResetPasswordRequest;
 import bw.black.dto.response.GetEmployeeInfoResponse;
 import bw.black.entity.Employee;
 import bw.black.service.EmployeeService;
@@ -44,5 +45,10 @@ public class EmployeeController {
     public ResponseEntity<String> getEmployeePassword(@PathVariable String email) {
         return ResponseEntity.ok(employeeService.getEncodedPasswordByEmail(email));
     }
-
+    @PostMapping("/reset-password")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN')")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        employeeService.resetPassword(request);
+        return ResponseEntity.ok("Password successfully reset");
+    }
     }

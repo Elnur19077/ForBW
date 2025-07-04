@@ -20,7 +20,7 @@ public class HrrController {
 
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize( "hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('SUPER_ADMIN') or hasAuthority('ADMIN')or hasAuthority('OPERATOR')")
     @PostMapping("/attendance")
     public ResponseEntity<List<HrrResponse>> getAttendance(@RequestBody HrrRequest request) {
         List<HrrResponse> responses = hrrService.getAttendance(request);
