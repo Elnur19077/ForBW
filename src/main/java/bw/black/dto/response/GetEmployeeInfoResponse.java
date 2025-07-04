@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class GetEmployeeInfoResponse {
+     private Long id;
     private String name;
     private String surname;
     private Role role;

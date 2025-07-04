@@ -35,7 +35,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<GetEmployeeInfoResponse> getAllActiveEmployees() {
         List<Employee> employees = employeeRepository.findAllByActive(1);
         return employees.stream()
-                .map(emp -> new GetEmployeeInfoResponse(emp.getName(), emp.getSurname(), emp.getRole()))
+                .map(emp -> new GetEmployeeInfoResponse(
+                        emp.getId(),
+                        emp.getName(),
+                        emp.getSurname(),
+                        emp.getRole()))
                 .toList();
     }
 
@@ -43,7 +47,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<GetEmployeeInfoResponse> searchEmployeesByKeyword(String keyword) {
         List<Employee> employees = employeeRepository.searchByKeyword(keyword);
         return employees.stream()
-                .map(emp -> new GetEmployeeInfoResponse(emp.getName(), emp.getSurname(), emp.getRole()))
+                .map(emp -> new GetEmployeeInfoResponse(
+                        emp.getId(),
+                        emp.getName(),
+                        emp.getSurname(),
+                        emp.getRole()))
                 .toList();
     }
 
@@ -113,6 +121,12 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ContactsException("Employee not found", ExceptionConstant.EMPLOYEE_NOT_FOUND);
         }
 
-        return new GetEmployeeInfoResponse(employee.getName(), employee.getSurname(),employee.getRole());
+        return new GetEmployeeInfoResponse(
+                employee.getId(),
+                employee.getName(),
+                employee.getSurname(),
+                employee.getRole()
+        );
     }
+
 }
