@@ -1,6 +1,7 @@
 package bw.black.controller;
 
 import bw.black.dto.request.LukoilCostCalculationRequest;
+import bw.black.dto.response.CostCalculationResponse;
 import bw.black.dto.response.LukoilCostCalculationResponse;
 import bw.black.entity.LukoilCostCalculation;
 import bw.black.service.LukoilCostCalculationService;
@@ -22,7 +23,6 @@ public class LukoilCostCalculationController {
         return lukoilCostCalculationService.calculate(request);
     }
     @PreAuthorize("hasAuthority('SUPER_ADMIN') or hasAuthority('ADMIN')or hasAuthority('OPERATOR')")
-
     @PostMapping("/submit")
     public LukoilCostCalculationResponse submit(@RequestBody LukoilCostCalculationRequest request) {
         return lukoilCostCalculationService.submit(request);
@@ -39,4 +39,5 @@ public class LukoilCostCalculationController {
     public void delete(@PathVariable Long id) {
         lukoilCostCalculationService.deleteCalculation(id);
     }
+
 }

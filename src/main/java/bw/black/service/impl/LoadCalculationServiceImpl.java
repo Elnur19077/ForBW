@@ -11,6 +11,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -23,8 +25,14 @@ public class LoadCalculationServiceImpl implements LoadCalculationService {
         Zone zone = zoneRepository.findByCountry(request.getCountry())
                 .orElseThrow(() -> new RuntimeException("Country not found in any zone"));
 
-        ZonePricing pricing = pricingRepository.findByZoneAndWeight(zone, request.getWeight())
-                .orElseThrow(() -> new RuntimeException("Pricing not found for this weight in the zone"));
+        List<ZonePricing> pricingList = pricingRepository.findAllByZoneAndWeight(zone, request.getWeight());
+
+        if (pricingList.isEmpty()) {
+            throw new RuntimeException("Pricing not found for this weight in the zone");
+        }
+
+        // Əgər bir neçə varsa, sadəcə birini seç (məsələn, ilkini)
+        ZonePricing pricing = pricingList.get(0); // və ya daha optimalı seçmək üçün filterləmək olar
 
         return new LoadCalculationResponse(
                 zone.getName(),

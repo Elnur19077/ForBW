@@ -115,5 +115,10 @@ public class LukoilCostCalculationServiceImpl implements LukoilCostCalculationSe
     public void deleteCalculation(Long id) {
         repository.deleteById(id);
     }
+    @Override
+    public List<LukoilCostCalculation> searchByProductName(String keyword) {
+        return repository.findByProductNameContainingIgnoreCase(keyword);
+    }
+
 }
 
