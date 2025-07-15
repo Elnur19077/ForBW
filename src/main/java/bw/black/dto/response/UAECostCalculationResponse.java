@@ -15,5 +15,9 @@ public class UAECostCalculationResponse {
     private String clientName;
     private List<UAEProductResponse> products;
     private double totalNetProfit;
+    private double totalGrossProfit;
+    private double totalFinalSales;
+    private double totalMonthlyCoverage;
+    private double totalAnnualCoverage;
 
 }

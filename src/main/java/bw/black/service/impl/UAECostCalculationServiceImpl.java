@@ -6,11 +6,10 @@ import bw.black.dto.response.UAECostCalculationResponse;
 import bw.black.dto.response.UAEProductResponse;
 import bw.black.entity.UAEProduct;
 import bw.black.repository.UAEProductRepository;
-import bw.black.service.CostCalculationService;
+
 import bw.black.service.UAECostCalculationService;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -34,18 +33,29 @@ public class UAECostCalculationServiceImpl  implements UAECostCalculationService
     public UAECostCalculationResponse calculate(UAECostCalculationRequest request) {
         List<UAEProductResponse> responses = new ArrayList<>();
         double totalNet = 0;
+        double totalGross = 0;
+        double totalFinalSales = 0;
 
         for (UAEProductRequest p : request.getProducts()) {
             UAEProductResponse resp = calculateSingle(p);
             responses.add(resp);
             totalNet += resp.getProfitAfterBonuses();
+            totalGross += resp.getGrossProfit();
+            totalFinalSales += resp.getFinalSalesPrice();
         }
+
+        double monthlyCoverage = (totalNet / MONTHLY_EXPENSE) * 100;
+        double annualCoverage = (totalNet / ANNUAL_TURNOVER) * 100;
 
         return UAECostCalculationResponse.builder()
                 .rfqNo(request.getRfqNo())
                 .clientName(request.getClientName())
                 .products(responses)
                 .totalNetProfit(totalNet)
+                .totalGrossProfit(totalGross)
+                .totalFinalSales(totalFinalSales)
+                .totalMonthlyCoverage(monthlyCoverage)
+                .totalAnnualCoverage(annualCoverage)
                 .build();
     }
 
@@ -53,10 +63,14 @@ public class UAECostCalculationServiceImpl  implements UAECostCalculationService
     public UAECostCalculationResponse submit(UAECostCalculationRequest request) {
         List<UAEProductResponse> responses = new ArrayList<>();
         double totalNet = 0;
+        double totalGross = 0;
+        double totalFinalSales = 0;
 
         for (UAEProductRequest p : request.getProducts()) {
             UAEProductResponse resp = calculateSingle(p);
             totalNet += resp.getProfitAfterBonuses();
+            totalGross += resp.getGrossProfit();
+            totalFinalSales += resp.getFinalSalesPrice();
 
             repository.save(UAEProduct.builder()
                     .rfqNo(request.getRfqNo())
@@ -83,11 +97,18 @@ public class UAECostCalculationServiceImpl  implements UAECostCalculationService
             responses.add(resp);
         }
 
+        double monthlyCoverage = (totalNet / MONTHLY_EXPENSE) * 100;
+        double annualCoverage = (totalNet / ANNUAL_TURNOVER) * 100;
+
         return UAECostCalculationResponse.builder()
                 .rfqNo(request.getRfqNo())
                 .clientName(request.getClientName())
                 .products(responses)
                 .totalNetProfit(totalNet)
+                .totalGrossProfit(totalGross)
+                .totalFinalSales(totalFinalSales)
+                .totalMonthlyCoverage(monthlyCoverage)
+                .totalAnnualCoverage(annualCoverage)
                 .build();
     }
 
