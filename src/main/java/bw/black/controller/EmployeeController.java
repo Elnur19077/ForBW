@@ -34,19 +34,21 @@ public class EmployeeController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         String token = employeeService.login(request);
 
-        // Cookie əl ilə set-cookie ilə təyin edilir (SameSite dəstəyi üçün)
-        String cookie = "token=" + token +
-                "; Path=/" +
-                "; HttpOnly" +
-                "; Secure" +
-                "; SameSite=None" +
-                "; Max-Age=3600"; // istəyə görə müddət
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(3600);
+        // SameSite atributunu default Cookie sinifi dəstəkləmir, ona görə header əlavə etmək lazım ola bilər
 
-        response.addHeader("Set-Cookie", cookie);
+        response.addCookie(cookie);
 
+        // Eyni zamanda əlavə et (SameSite üçün)
+        response.addHeader("Set-Cookie", "token=" + token + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600");
 
         return ResponseEntity.ok("Login successful");
     }
+
 
 
     @GetMapping("/me")
