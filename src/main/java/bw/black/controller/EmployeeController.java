@@ -13,7 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import javax.servlet.http.Cookie;
+
 
 @RequiredArgsConstructor
 @RestController
@@ -27,21 +30,37 @@ public class EmployeeController {
         return employeeService.createEmployee(reqEmployee);
     }
 
-        @PostMapping("/login")
-        @Operation(summary = "Login", description = "İstifadəçi adı və şifrə ilə daxil olur")
-        public String login(@RequestBody LoginRequest request) {
-            return employeeService.login(request);
-        }
+    @PostMapping("/login")
+    @Operation(summary = "Login", description = "İstifadəçi adı və şifrə ilə daxil olur")
+    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+        String token = employeeService.login(request);
+
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true); // İstifadəçi tərəfindən görünməsin
+        cookie.setSecure(true);   // HTTPS üçün (dev-də test üçün false da ola bilər)
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60); // 1 gün
+
+        response.addCookie(cookie);
+        return ResponseEntity.ok("Login successful");
+    }
     @GetMapping("/me")
     public GetEmployeeInfoResponse getEmployeeInfo() {
         return employeeService.getLoggedInEmployeeInfo();
     }
 
     @PostMapping("/logout")
-    public String logout() {
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Silmək üçün
 
-        return "Logout successful";
+        response.addCookie(cookie);
+        return ResponseEntity.ok("Logout successful");
     }
+
     @GetMapping("/password/{email}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<String> getEmployeePassword(@PathVariable String email) {
