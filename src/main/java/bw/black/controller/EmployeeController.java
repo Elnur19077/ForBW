@@ -39,11 +39,9 @@ public class EmployeeController {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(3600);
-        // SameSite atributunu default Cookie sinifi dəstəkləmir, ona görə header əlavə etmək lazım ola bilər
 
         response.addCookie(cookie);
 
-        // Eyni zamanda əlavə et (SameSite üçün)
         response.addHeader("Set-Cookie", "token=" + token + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600");
 
         return ResponseEntity.ok("Login successful");
