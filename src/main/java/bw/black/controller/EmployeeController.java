@@ -8,7 +8,10 @@ import bw.black.entity.Employee;
 import bw.black.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +30,27 @@ public class EmployeeController {
         return employeeService.createEmployee(reqEmployee);
     }
 
-        @PostMapping("/login")
-        @Operation(summary = "Login", description = "İstifadəçi adı və şifrə ilə daxil olur")
-        public String login(@RequestBody LoginRequest request) {
-            return employeeService.login(request);
-        }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+        // 1. İstifadəçini yoxla, uğurludursa token hazırla
+        String token = employeeService.login(request);
+
+        // 2. Token-u HttpOnly cookie kimi yarat
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);           // JavaScript tokenu görə bilməz
+        cookie.setSecure(true);             // HTTPS istifadə olunursa true qoy
+        cookie.setPath("/");                // cookie bütün path-lərdə keçərlidir
+
+        // Əgər Servlet API 4.0+ istifadə edirsə, SameSite flag-i əlavə et (lazımdırsa)
+        // cookie.setSameSite("Lax");
+
+        // 3. Cookie cavaba əlavə et
+        response.addCookie(cookie);
+
+        // 4. İstəyə görə müştəriyə cavab ver (məsələn, success mesajı)
+        return ResponseEntity.ok("Login successful");
+    }
+
     @GetMapping("/me")
     public GetEmployeeInfoResponse getEmployeeInfo() {
         return employeeService.getLoggedInEmployeeInfo();
