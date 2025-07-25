@@ -42,7 +42,8 @@ public class EmployeeController {
                 "; SameSite=None" +
                 "; Max-Age=3600"; // istəyə görə müddət
 
-        response.setHeader("Set-Cookie", cookie);
+        response.addHeader("Set-Cookie", cookie);
+
 
         return ResponseEntity.ok("Login successful");
     }
