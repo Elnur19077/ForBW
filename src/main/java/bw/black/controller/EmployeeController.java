@@ -32,24 +32,21 @@ public class EmployeeController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        // 1. İstifadəçini yoxla, uğurludursa token hazırla
         String token = employeeService.login(request);
 
-        // 2. Token-u HttpOnly cookie kimi yarat
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);           // JavaScript tokenu görə bilməz
-        cookie.setSecure(true);             // HTTPS istifadə olunursa true qoy
-        cookie.setPath("/");                // cookie bütün path-lərdə keçərlidir
+        // Cookie əl ilə set-cookie ilə təyin edilir (SameSite dəstəyi üçün)
+        String cookie = "token=" + token +
+                "; Path=/" +
+                "; HttpOnly" +
+                "; Secure" +
+                "; SameSite=None" +
+                "; Max-Age=3600"; // istəyə görə müddət
 
-        // Əgər Servlet API 4.0+ istifadə edirsə, SameSite flag-i əlavə et (lazımdırsa)
-        // cookie.setSameSite("Lax");
+        response.setHeader("Set-Cookie", cookie);
 
-        // 3. Cookie cavaba əlavə et
-        response.addCookie(cookie);
-
-        // 4. İstəyə görə müştəriyə cavab ver (məsələn, success mesajı)
         return ResponseEntity.ok("Login successful");
     }
+
 
     @GetMapping("/me")
     public GetEmployeeInfoResponse getEmployeeInfo() {
