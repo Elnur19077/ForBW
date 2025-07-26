@@ -90,7 +90,7 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOriginPatterns(Arrays.asList("https://www.adminbw.com", "http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("https://www.adminbw.com", "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("OPTIONS", "HEAD", "GET", "PUT", "POST", "DELETE", "PATCH"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
 
