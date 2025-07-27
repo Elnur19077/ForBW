@@ -31,20 +31,9 @@ public class EmployeeController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        String token = employeeService.login(request);
-
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(3600);
-
-        response.addCookie(cookie);
-
-        response.addHeader("Set-Cookie", "token=" + token + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600");
-
-        return ResponseEntity.ok("Login successful");
+    @Operation(summary = "Login", description = "İstifadəçi adı və şifrə ilə daxil olur")
+    public String login(@RequestBody LoginRequest request) {
+        return employeeService.login(request);
     }
 
 
