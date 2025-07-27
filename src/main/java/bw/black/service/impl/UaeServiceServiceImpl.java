@@ -135,46 +135,34 @@ public class UaeServiceServiceImpl implements UaeServiceService {
     private List<UaeServiceResponse> groupByRFQ(List<UaeService> entries) {
         List<UaeServiceResponse> responses = new ArrayList<>();
 
-        entries.stream()
-                .collect(Collectors.groupingBy(e -> Optional.ofNullable(e.getRfqNo()).orElse("UNKNOWN")))
-                .forEach((rfqNo, list) -> {
-                    List<UaeServiceProductResponse> productResponses = new ArrayList<>();
-                    double net = 0, gross = 0, sales = 0, month = 0, year = 0;
-                    String clientName = "";
+        for (UaeService e : entries) {
+            List<UaeServiceProductResponse> productResponses = new ArrayList<>();
 
-                    for (UaeService e : list) {
-                        clientName = e.getClientName(); // sonuncunu saxlayırıq
-                        productResponses.add(UaeServiceProductResponse.builder()
-                                .productName(e.getProductName())
-                                .totalCostWithoutMargin(e.getTotalCostWithoutMargin())
-                                .finalSalesPrice(e.getFinalSalesPrice())
-                                .grossProfit(e.getGrossProfit())
-                                .netProfit(e.getNetProfit())
-                                .profitAfterBonuses(e.getProfitAfterBonuses())
-                                .monthlyCoverage(e.getMonthlyCoverage())
-                                .annualCoverage(e.getAnnualCoverage())
-                                .build());
+            productResponses.add(UaeServiceProductResponse.builder()
+                    .productName(e.getProductName())
+                    .totalCostWithoutMargin(e.getTotalCostWithoutMargin())
+                    .finalSalesPrice(e.getFinalSalesPrice())
+                    .grossProfit(e.getGrossProfit())
+                    .netProfit(e.getNetProfit())
+                    .profitAfterBonuses(e.getProfitAfterBonuses())
+                    .monthlyCoverage(e.getMonthlyCoverage())
+                    .annualCoverage(e.getAnnualCoverage())
+                    .build());
 
-                        net += e.getProfitAfterBonuses();
-                        gross += e.getGrossProfit();
-                        sales += e.getFinalSalesPrice();
-                        month += e.getMonthlyCoverage();
-                        year += e.getAnnualCoverage();
-                    }
-
-                    responses.add(UaeServiceResponse.builder()
-                            .rfqNo(rfqNo)
-                            .clientName(clientName)
-                            .products(productResponses)
-                            .totalNetProfit(net)
-                            .totalGrossProfit(gross)
-                            .totalFinalSales(sales)
-                            .totalMonthlyCoverage(month)
-                            .totalAnnualCoverage(year)
-                            .build());
-                });
+            responses.add(UaeServiceResponse.builder()
+                    .rfqNo(Optional.ofNullable(e.getRfqNo()).orElse("UNKNOWN"))
+                    .clientName(Optional.ofNullable(e.getClientName()).orElse("UNKNOWN_CLIENT"))
+                    .products(productResponses) // 1 məhsul = 1 cavab
+                    .totalNetProfit(e.getProfitAfterBonuses())
+                    .totalGrossProfit(e.getGrossProfit())
+                    .totalFinalSales(e.getFinalSalesPrice())
+                    .totalMonthlyCoverage(e.getMonthlyCoverage())
+                    .totalAnnualCoverage(e.getAnnualCoverage())
+                    .build());
+        }
 
         return responses;
     }
+
 
 }
