@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 @Primary
@@ -131,15 +134,16 @@ public class UaeServiceServiceImpl implements UaeServiceService {
 
     private List<UaeServiceResponse> groupByRFQ(List<UaeService> entries) {
         List<UaeServiceResponse> responses = new ArrayList<>();
+
         entries.stream()
-                .collect(java.util.stream.Collectors.groupingBy(UaeService::getRfqNo))
+                .collect(Collectors.groupingBy(e -> Optional.ofNullable(e.getRfqNo()).orElse("UNKNOWN")))
                 .forEach((rfqNo, list) -> {
                     List<UaeServiceProductResponse> productResponses = new ArrayList<>();
                     double net = 0, gross = 0, sales = 0, month = 0, year = 0;
                     String clientName = "";
 
                     for (UaeService e : list) {
-                        clientName = e.getClientName();
+                        clientName = e.getClientName(); // sonuncunu saxlayırıq
                         productResponses.add(UaeServiceProductResponse.builder()
                                 .productName(e.getProductName())
                                 .totalCostWithoutMargin(e.getTotalCostWithoutMargin())
@@ -169,6 +173,8 @@ public class UaeServiceServiceImpl implements UaeServiceService {
                             .totalAnnualCoverage(year)
                             .build());
                 });
+
         return responses;
     }
+
 }
