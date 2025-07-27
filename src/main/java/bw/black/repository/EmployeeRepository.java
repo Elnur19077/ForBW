@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findAllByActive(Integer active);
@@ -18,7 +20,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> searchByKeyword(@Param("keyword") String keyword);
 
     Employee findByIdAndActive(Long id, Integer active);
-
+    Optional<Employee> findByEmail(String email);
     /*boolean existsEmployeeByEmailIgnoreCaseAndActive(String email, Integer active);
 
     boolean existsEmployeeByPhoneIgnoreCaseAndActive(String phone, Integer active);

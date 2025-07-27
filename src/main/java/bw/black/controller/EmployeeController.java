@@ -8,10 +8,7 @@ import bw.black.entity.Employee;
 import bw.black.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,25 +27,11 @@ public class EmployeeController {
         return employeeService.createEmployee(reqEmployee);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-        String token = employeeService.login(request);
-
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(3600);
-
-        response.addCookie(cookie);
-
-        response.addHeader("Set-Cookie", "token=" + token + "; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=3600");
-
-        return ResponseEntity.ok("Login successful");
-    }
-
-
-
+        @PostMapping("/login")
+        @Operation(summary = "Login", description = "İstifadəçi adı və şifrə ilə daxil olur")
+        public String login(@RequestBody LoginRequest request) {
+            return employeeService.login(request);
+        }
     @GetMapping("/me")
     public GetEmployeeInfoResponse getEmployeeInfo() {
         return employeeService.getLoggedInEmployeeInfo();
